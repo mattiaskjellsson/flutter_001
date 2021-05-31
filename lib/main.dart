@@ -27,10 +27,10 @@ class Home extends StatelessWidget {
       appBar: AppBar(title: Text(this.title)),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Hello(),
-            RandomWords(),
+            Expanded(child: RandomWords()),
           ],
         ),
       ),

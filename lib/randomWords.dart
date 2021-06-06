@@ -3,12 +3,15 @@ import 'package:flutter/widgets.dart';
 import 'package:english_words/english_words.dart';
 
 class RandomWords extends StatefulWidget {
+  late final Set<WordPair> _saved;
+  RandomWords(this._saved);
+
   @override
   _RandomWordsState createState() => _RandomWordsState();
 }
 
 class _RandomWordsState extends State<RandomWords> {
-  final List<WordPair> wordPairs = <WordPair>[];
+  final List<WordPair> _wordPairs = <WordPair>[];
   final TextStyle biggerFont = TextStyle(
     fontSize: 20.0,
     fontWeight: FontWeight.w300,
@@ -22,28 +25,33 @@ class _RandomWordsState extends State<RandomWords> {
   _buildSuggestions() => ListView.builder(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
         itemBuilder: (context, idx) {
-          if (idx.isOdd)
-            return Divider(
-              height: 1,
-              thickness: 1,
-              color: Colors.deepOrange,
-            );
+          if (idx.isOdd) return Divider();
 
           final index = idx ~/ 2;
-          if (index >= wordPairs.length) {
-            wordPairs.addAll(generateWordPairs().take(10));
+          if (index >= _wordPairs.length) {
+            _wordPairs.addAll(generateWordPairs().take(10));
           }
 
-          return _buildRow(wordPairs[index]);
+          return _buildRow(_wordPairs[index]);
         },
       );
 
   _buildRow(WordPair wp) {
+    final alreadySaved = widget._saved.contains(wp);
+
     return ListTile(
       title: Text(
         wp.asPascalCase,
         style: biggerFont,
       ),
+      trailing: Icon(
+          alreadySaved ? Icons.favorite : Icons.favorite_border_outlined,
+          color: alreadySaved ? Colors.red : null),
+      onTap: () {
+        setState(() {
+          alreadySaved ? widget._saved.remove(wp) : widget._saved.add(wp);
+        });
+      },
     );
   }
 }

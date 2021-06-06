@@ -4,7 +4,8 @@ import 'package:english_words/english_words.dart';
 
 class RandomWords extends StatefulWidget {
   late final Set<WordPair> _saved;
-  RandomWords(this._saved);
+  late final _biggerFont;
+  RandomWords(this._saved, this._biggerFont);
 
   @override
   _RandomWordsState createState() => _RandomWordsState();
@@ -12,10 +13,6 @@ class RandomWords extends StatefulWidget {
 
 class _RandomWordsState extends State<RandomWords> {
   final List<WordPair> _wordPairs = <WordPair>[];
-  final TextStyle biggerFont = TextStyle(
-    fontSize: 20.0,
-    fontWeight: FontWeight.w300,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +39,7 @@ class _RandomWordsState extends State<RandomWords> {
     return ListTile(
       title: Text(
         wp.asPascalCase,
-        style: biggerFont,
+        style: widget._biggerFont,
       ),
       trailing: Icon(
           alreadySaved ? Icons.favorite : Icons.favorite_border_outlined,

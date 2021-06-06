@@ -23,6 +23,10 @@ class MyApp extends StatelessWidget {
 class Home extends StatelessWidget {
   final String title = "Random words";
   final Set<WordPair> _saved = {};
+  final TextStyle _biggerFont = TextStyle(
+    fontSize: 20.0,
+    fontWeight: FontWeight.w300,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +46,7 @@ class Home extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Hello(),
-            Expanded(child: RandomWords(_saved)),
+            Expanded(child: RandomWords(_saved, _biggerFont)),
           ],
         ),
       ),
@@ -50,30 +54,29 @@ class Home extends StatelessWidget {
   }
 
   void _pushSaved(context) {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (BuildContext context) {
-        final tiles = _saved.map(
-          (WordPair pair) {
-            return ListTile(
-              title: Text(
-                pair.asPascalCase,
-                // style: _biggerFont,
-              ),
-            );
-          },
-        );
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
+      final tiles = _saved.map(
+        (WordPair pair) {
+          return ListTile(
+            title: Text(
+              pair.asPascalCase,
+              style: _biggerFont,
+            ),
+          );
+        },
+      );
 
-        final divided = tiles.isNotEmpty
-            ? ListTile.divideTiles(context: context, tiles: tiles).toList()
-            : <Widget>[];
+      final divided = tiles.isNotEmpty
+          ? ListTile.divideTiles(context: context, tiles: tiles).toList()
+          : <Widget>[];
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Saved Suggestions'),
-          ),
-          body: ListView(children: divided),
-        );
-      },
-    ));
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Saved Suggestions'),
+        ),
+        body: ListView(children: divided),
+      );
+    }));
   }
 }

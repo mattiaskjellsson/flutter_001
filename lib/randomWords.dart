@@ -1,6 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:english_words/english_words.dart';
+import 'package:http/http.dart' as http;
+
+import './models/movie.dart';
+import './models/moviesPage.dart';
 
 class RandomWords extends StatefulWidget {
   late final Set<WordPair> _saved;
@@ -12,43 +18,72 @@ class RandomWords extends StatefulWidget {
 }
 
 class _RandomWordsState extends State<RandomWords> {
-  final List<WordPair> _wordPairs = <WordPair>[];
+  final List<Movie> _movies = <Movie>[];
+  final ScrollController _scrollController = ScrollController();
+  int _page = 1;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return _buildSuggestions();
+    return _buildMovies();
   }
 
-  _buildSuggestions() => ListView.builder(
-        padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-        itemBuilder: (context, idx) {
-          if (idx.isOdd) return Divider();
+  @override
+  dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-          final index = idx ~/ 2;
-          if (index >= _wordPairs.length) {
-            _wordPairs.addAll(generateWordPairs().take(10));
-          }
+  Widget _buildMovies() {
+    return Column(
+      children: [
+        Expanded(
+            child: NotificationListener<ScrollNotification>(
+                child: ListView.builder(
+                  itemCount: _movies.length,
+                  itemBuilder: (context, index) {
+                    return _buildRow(_movies[index]);
+                  },
+                ),
+                onNotification: (ScrollNotification notification) {
+                  if (!_isLoading &&
+                      notification.metrics.pixels ==
+                          notification.metrics.maxScrollExtent) {
+                    _getMovies();
+                  }
 
-          return _buildRow(_wordPairs[index]);
-        },
-      );
-
-  _buildRow(WordPair wp) {
-    final alreadySaved = widget._saved.contains(wp);
-
-    return ListTile(
-      title: Text(
-        wp.asPascalCase,
-        style: widget._biggerFont,
-      ),
-      trailing: Icon(
-          alreadySaved ? Icons.favorite : Icons.favorite_border_outlined,
-          color: alreadySaved ? Colors.red : null),
-      onTap: () {
-        setState(() {
-          alreadySaved ? widget._saved.remove(wp) : widget._saved.add(wp);
-        });
-      },
+                  return true;
+                })),
+      ],
     );
+  }
+
+  _buildRow(Movie movie) {
+    return ListTile(
+      title: Text(movie.title),
+      leading: Image.network(
+        'https://image.tmdb.org/t/p/w200${movie.poster_path}',
+        cacheWidth: 200,
+      ),
+      subtitle: Text(movie.overview),
+      trailing: Text('${movie.vote_average}'),
+    );
+  }
+
+  Future _getMovies() async {
+    _isLoading = true;
+    final url =
+        'https://api.themoviedb.org/3/discover/movie?api_key=74eb0ca644c90551bacaf3a1aa9cfa37&language=en-US&page=${_page++}';
+    final result = await http.get(Uri.parse(url));
+    final movies = MoviesPage.fromJson(jsonDecode(result.body)).results;
+    setState(() {
+      _movies.addAll(movies);
+      _isLoading = false;
+    });
   }
 }
